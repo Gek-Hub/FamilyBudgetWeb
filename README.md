@@ -26,6 +26,8 @@ python manage.py seed_demo
 python manage.py runserver 127.0.0.1:8010
 ```
 
+Или просто открыть файл start_server_8010.bat
+
 После запуска открыть:
 
 ```text
