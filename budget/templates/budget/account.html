@@ -1,0 +1,7 @@
+﻿{% extends "budget/base.html" %}
+{% block content %}
+<h1>Аккаунт семьи</h1>
+<div class="card"><div><b>Семья:</b> {{ current_family_name }}</div><div><b>Текущий пользователь:</b> {{ current_member_name|default:"не выбран" }}</div><div><b>Роль:</b> {{ current_member_role|default:"не указана" }}</div></div>
+<form method="post" class="form wide">{% csrf_token %}{{ form.as_p }}<button>Запомнить как меня</button></form>
+<a class="button danger" href="{% url 'logout_family' %}">Выйти из семьи</a>
+{% endblock %}

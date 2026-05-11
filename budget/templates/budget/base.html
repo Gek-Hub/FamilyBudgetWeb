@@ -1,0 +1,39 @@
+﻿{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Семейный бюджет{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'budget/style.css' %}">
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">FamilyBudgetWeb</div>
+        {% if current_family_name %}
+            <div class="profile">
+                <div><b>Семья:</b> {{ current_family_name }}</div>
+                <div><b>Сейчас:</b> {{ current_member_name|default:"не выбран" }}</div>
+            </div>
+        {% endif %}
+        <nav>
+            <a href="{% url 'dashboard' %}">Главная</a>
+            <a href="{% url 'transactions' %}">Операции</a>
+            <a href="{% url 'categories' %}">Категории</a>
+            <a href="{% url 'wallets' %}">Счета и валюты</a>
+            <a href="{% url 'budget_limits' %}">Бюджет</a>
+            <a href="{% url 'analytics' %}">Аналитика</a>
+            <a href="{% url 'family_members' %}">Семья</a>
+            <a href="{% url 'account' %}">Аккаунт</a>
+            {% if current_family_name %}<a class="danger-link" href="{% url 'logout_family' %}">Выйти</a>{% endif %}
+        </nav>
+    </aside>
+    <main class="content">
+        {% if messages %}
+            {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+</body>
+</html>

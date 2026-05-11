@@ -1,0 +1,8 @@
+﻿{% extends "budget/base.html" %}
+{% block content %}
+<div class="auth-card">
+<h1>Создание новой семьи</h1>
+<form method="post" class="form">{% csrf_token %}{{ form.as_p }}<button>Создать семейный аккаунт</button></form>
+<p><a href="{% url 'login_family' %}">Вернуться ко входу</a></p>
+</div>
+{% endblock %}

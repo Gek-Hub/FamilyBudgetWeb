@@ -1,0 +1,30 @@
+﻿{% extends "budget/base.html" %}
+{% block title %}Операции{% endblock %}
+{% block content %}
+<h1>Финансовые операции</h1>
+<a class="button" href="{% url 'add_transaction' %}">Добавить операцию</a>
+
+<div class="list">
+    {% for item in items %}
+        <div class="list-item">
+            <div>
+                <b>{{ item.category.name }}</b>
+                <div class="muted">{{ item.type }} · {{ item.family_member.full_name }} · {{ item.wallet.name }} · {{ item.date }}</div>
+                <div class="muted">{{ item.comment }}</div>
+            </div>
+
+            <div class="dashboard-operation-actions">
+                <div class="amount">{{ item.amount_rub|floatformat:2 }} ₽</div>
+                <div class="small-actions">
+                    <a class="mini-button" href="{% url 'edit_transaction' item.id %}">Редактировать</a>
+                    <a class="mini-button danger-mini" href="{% url 'delete_transaction' item.id %}?next={{ request.path }}"
+                       onclick="return confirm('Удалить эту операцию?');">Удалить</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="muted">Операций пока нет.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+

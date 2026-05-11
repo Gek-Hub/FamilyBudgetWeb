@@ -1,0 +1,49 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+*.sqlite3
+family_budget_web.sqlite3
+media/
+staticfiles/
+
+# Virtual environment
+venv/
+.env/
+.venv/
+ENV/
+
+# Secrets
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# PowerShell helper scripts created during development
+create_django_family_budget_web*.ps1
+fix_*.ps1
+add_*.ps1
+run_*.bat
+
+# SQLite temporary files
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm

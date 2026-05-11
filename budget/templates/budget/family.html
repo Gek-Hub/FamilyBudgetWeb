@@ -1,0 +1,8 @@
+﻿{% extends "budget/base.html" %}
+{% block content %}
+<h1>Участники семьи</h1>
+<form method="post" class="form wide">{% csrf_token %}{{ form.as_p }}<button>Добавить члена семьи</button></form>
+<div class="list">{% for item in items %}
+<div class="list-item"><div><b>{{ item.full_name }}</b><div class="muted">{{ item.email_for_display }} · {{ item.role }}</div></div><a class="delete" href="{% url 'delete_member' item.id %}">Удалить</a></div>
+{% endfor %}</div>
+{% endblock %}

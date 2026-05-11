@@ -1,0 +1,9 @@
+﻿{% extends "budget/base.html" %}
+{% block content %}
+<h1>Бюджетные лимиты</h1>
+<form method="post" class="form wide">{% csrf_token %}{{ form.as_p }}<button>Сохранить лимит</button></form>
+<h2>Статус лимитов</h2>
+<div class="list">{% for item in statuses %}
+<div class="list-item vertical"><b>{{ item.category }}</b><div>Лимит: {{ item.limit|floatformat:2 }} ₽</div><div>Потрачено: {{ item.spent|floatformat:2 }} ₽</div><div class="{% if item.is_over %}bad{% else %}good{% endif %}">{% if item.is_over %}Превышение{% else %}Осталось{% endif %}: {{ item.remaining|floatformat:2 }} ₽</div><div class="progress"><span style="width: {{ item.percent }}%"></span></div></div>
+{% empty %}<p class="muted">Лимиты пока не заданы.</p>{% endfor %}</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+﻿{% extends "budget/base.html" %}
+{% block content %}
+<h1>Расширенная аналитика</h1>
+<form method="get" class="filters">
+<label>Тип отчета<select name="report_type">{% for type in report_types %}<option value="{{ type }}" {% if type == report_type %}selected{% endif %}>{{ type }}</option>{% endfor %}</select></label>
+<label>Начало периода<input type="date" name="start_date" value="{{ start_date }}"></label>
+<label>Конец периода<input type="date" name="end_date" value="{{ end_date }}"></label>
+<button>Сформировать</button>
+</form>
+<div class="card primary"><div class="label">{{ report_type }}</div><div class="value">Итого: {{ total|floatformat:2 }} ₽</div></div>
+<div class="list">{% for group in groups %}
+<details class="analytics-item"><summary><div><b>{{ group.name }}</b><div class="muted">{{ group.share|floatformat:1 }}% от общей суммы</div><div class="progress"><span style="width: {{ group.share }}%"></span></div></div><div class="amount">{{ group.amount|floatformat:2 }} ₽</div></summary>
+<div class="details-list">{% for t in group.details %}<div class="detail-row"><div><b>{{ t.date }} — {{ t.category.name }}</b><div class="muted">{{ t.family_member.full_name }} · {{ t.wallet.name }} · {{ t.amount }} {{ t.wallet.currency }}</div><div class="muted">{{ t.comment }}</div></div><div>{{ t.amount_rub|floatformat:2 }} ₽</div></div>{% endfor %}</div></details>
+{% empty %}<p class="muted">За выбранный период данных нет.</p>{% endfor %}</div>
+{% endblock %}

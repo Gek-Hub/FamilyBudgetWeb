@@ -1,0 +1,156 @@
+﻿{% extends "budget/base.html" %}
+{% block title %}Главная{% endblock %}
+{% block content %}
+<h1>Семейный бюджет</h1>
+<p class="muted">Главная страница текущей семьи.</p>
+
+<div class="cards">
+    <div class="card primary">
+        <div class="label">Баланс</div>
+        <div class="value">{{ balance|floatformat:2 }} ₽</div>
+    </div>
+    <div class="card">
+        <div class="label">Доходы</div>
+        <div class="value good">{{ income|floatformat:2 }} ₽</div>
+    </div>
+    <div class="card">
+        <div class="label">Расходы</div>
+        <div class="value bad">{{ expense|floatformat:2 }} ₽</div>
+    </div>
+</div>
+
+<div class="voice-card" id="voiceAssistantCard">
+    <h2>AI-помощник</h2>
+    <p class="muted">Напишите или произнесите команду, например: «добавь спорт 2500 сегодня» или «добавь еда 400 сегодня».</p>
+
+    <div class="voice-row">
+        <input id="voiceCommandInput" type="text" placeholder="Например: добавь спорт 2500 сегодня">
+        <button type="button" id="sendVoiceCommandBtn">Добавить</button>
+        <button type="button" id="startVoiceBtn">🎙 Сказать</button>
+    </div>
+
+    <div id="voiceStatus" class="voice-status muted">Ожидание команды.</div>
+    <div class="muted voice-help">
+        Если микрофон пишет not-allowed, разрешите микрофон для сайта 127.0.0.1 в настройках браузера или используйте текстовое поле.
+    </div>
+</div>
+
+<div class="actions">
+    <a class="button" href="{% url 'add_transaction' %}">Добавить операцию вручную</a>
+</div>
+
+<h2>Последние операции</h2>
+<div class="list">
+    {% for item in last_transactions %}
+        <div class="list-item">
+            <div>
+                <b>{{ item.category.name }}</b>
+                <div class="muted">{{ item.family_member.full_name }} · {{ item.wallet.name }} · {{ item.date }}</div>
+                <div class="muted">{{ item.comment }}</div>
+            </div>
+
+            <div class="dashboard-operation-actions">
+                <div class="amount">{{ item.amount_rub|floatformat:2 }} ₽</div>
+                <div class="small-actions">
+                    <a class="mini-button" href="{% url 'edit_transaction' item.id %}">Редактировать</a>
+                    <a class="mini-button danger-mini" href="{% url 'delete_transaction' item.id %}?next={{ request.path }}"
+                       onclick="return confirm('Удалить эту операцию?');">Удалить</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="muted">Операций пока нет.</p>
+    {% endfor %}
+</div>
+
+<script>
+function sendAiCommand(text) {
+    if (!text || text.trim() === "") {
+        document.getElementById("voiceStatus").innerText = "Введите или произнесите команду.";
+        return;
+    }
+
+    const voiceStatus = document.getElementById("voiceStatus");
+    voiceStatus.innerText = "Обрабатываю команду...";
+
+    fetch("{% url 'voice_command' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "text/plain; charset=utf-8"
+        },
+        body: text
+    })
+    .then(async response => {
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Ошибка сервера");
+        }
+
+        return data;
+    })
+    .then(data => {
+        if (data.ok) {
+            const t = data.transaction;
+            voiceStatus.innerText = `Добавлено: ${t.type}, ${t.category}, ${t.amount} ₽, ${t.date}`;
+            setTimeout(() => location.reload(), 900);
+        } else {
+            voiceStatus.innerText = "Ошибка: " + data.error;
+        }
+    })
+    .catch(error => {
+        voiceStatus.innerText = "Ошибка: " + error.message;
+    });
+}
+
+const commandInput = document.getElementById("voiceCommandInput");
+const sendBtn = document.getElementById("sendVoiceCommandBtn");
+const startVoiceBtn = document.getElementById("startVoiceBtn");
+
+sendBtn.addEventListener("click", function () {
+    sendAiCommand(commandInput.value);
+});
+
+commandInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        sendAiCommand(commandInput.value);
+    }
+});
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (!SpeechRecognition) {
+    startVoiceBtn.disabled = true;
+    document.getElementById("voiceStatus").innerText = "Голосовой ввод не поддерживается этим браузером. Используйте Chrome или Edge.";
+} else {
+    const recognition = new SpeechRecognition();
+    recognition.lang = "ru-RU";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    startVoiceBtn.addEventListener("click", function () {
+        document.getElementById("voiceStatus").innerText = "Слушаю...";
+        recognition.start();
+    });
+
+    recognition.onresult = function (event) {
+        const text = event.results[0][0].transcript;
+        commandInput.value = text;
+        document.getElementById("voiceStatus").innerText = "Распознано: " + text;
+        sendAiCommand(text);
+    };
+
+    recognition.onerror = function (event) {
+        if (event.error === "not-allowed") {
+            document.getElementById("voiceStatus").innerText = "Микрофон запрещен браузером. Нажмите на значок замка/настроек слева от адреса сайта и разрешите микрофон.";
+        } else {
+            document.getElementById("voiceStatus").innerText = "Ошибка распознавания: " + event.error;
+        }
+    };
+}
+</script>
+{% endblock %}
+
+
+
