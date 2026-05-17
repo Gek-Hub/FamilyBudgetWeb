@@ -1,0 +1,28 @@
+﻿{% extends "budget/base.html" %}
+{% block title %}Подробная информация об операции{% endblock %}
+{% block content %}
+<section class="page-heading">
+    <h1>Подробная информация об операции</h1>
+    <p class="muted">Динамическая страница сущности отображает все данные, сохраненные в базе.</p>
+</section>
+
+<div class="detail-card">
+    <div class="detail-row"><span>ID операции</span><b>{{ item.id }}</b></div>
+    <div class="detail-row"><span>Семья</span><b>{{ item.family.family_name }}</b></div>
+    <div class="detail-row"><span>Тип</span><b>{{ item.type }}</b></div>
+    <div class="detail-row"><span>Категория</span><b>{{ item.category.name }}</b></div>
+    <div class="detail-row"><span>Счет</span><b>{{ item.wallet.name }} ({{ item.wallet.currency }})</b></div>
+    <div class="detail-row"><span>Член семьи</span><b>{{ item.family_member.full_name }}</b></div>
+    <div class="detail-row"><span>Сумма</span><b>{{ item.amount }} {{ item.wallet.currency }}</b></div>
+    <div class="detail-row"><span>Сумма в рублях</span><b>{{ item.amount_rub }} ₽</b></div>
+    <div class="detail-row"><span>Дата</span><b>{{ item.date }}</b></div>
+    <div class="detail-row"><span>Синхронизация</span><b>{% if item.is_synced %}Да{% else %}Нет{% endif %}</b></div>
+    <div class="detail-row"><span>Комментарий</span><b>{{ item.comment|default:"Комментарий не указан" }}</b></div>
+</div>
+
+<div class="actions">
+    <a class="button" href="{% url 'edit_transaction' item.id %}">Редактировать</a>
+    <a class="button danger" href="{% url 'delete_transaction' item.id %}?next={% url 'transactions' %}" onclick="return confirm('Удалить эту операцию?');">Удалить</a>
+    <a class="button secondary" href="{% url 'transactions' %}">Назад к операциям</a>
+</div>
+{% endblock %}

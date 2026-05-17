@@ -2,8 +2,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib import messages
-from django.db.models import Sum
+from django.db.models import Sum, Q
+from django.core.paginator import Paginator
 from django.utils import timezone
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from .deepseek_service import parse_voice_command, normalize_amount
@@ -380,3 +382,97 @@ def voice_command(request):
         }, status=400)
 
 
+
+
+@login_required_family
+def transaction_detail(request, pk):
+    family = get_current_family(request)
+    item = get_object_or_404(
+        Transaction.objects.select_related("family", "category", "wallet", "family_member"),
+        id=pk,
+        family=family
+    )
+    return render(request, "budget/transaction_detail.html", {"item": item})
+
+
+@login_required_family
+def api_transactions(request):
+    family = get_current_family(request)
+
+    search = request.GET.get("search", "").strip()
+    sort = request.GET.get("sort", "-date")
+    page_number = request.GET.get("page", "1")
+    per_page = request.GET.get("per_page", "5")
+
+    try:
+        per_page = int(per_page)
+    except ValueError:
+        per_page = 5
+
+    if per_page not in [5, 10, 15]:
+        per_page = 5
+
+    sort_map = {
+        "-date": "-date",
+        "date": "date",
+        "-amount": "-amount_rub",
+        "amount": "amount_rub",
+        "category": "category__name",
+        "-category": "-category__name",
+        "member": "family_member__full_name",
+        "-member": "-family_member__full_name",
+        "type": "type",
+        "-type": "-type",
+        "-id": "-id",
+        "id": "id",
+    }
+
+    sort_field = sort_map.get(sort, "-date")
+
+    qs = Transaction.objects.filter(family=family).select_related("category", "wallet", "family_member")
+
+    if search:
+        qs = qs.filter(
+            Q(category__name__icontains=search) |
+            Q(wallet__name__icontains=search) |
+            Q(family_member__full_name__icontains=search) |
+            Q(type__icontains=search) |
+            Q(comment__icontains=search)
+        )
+
+    qs = qs.order_by(sort_field, "-id")
+
+    paginator = Paginator(qs, per_page)
+    page_obj = paginator.get_page(page_number)
+
+    items = []
+    for item in page_obj.object_list:
+        items.append({
+            "id": item.id,
+            "type": item.type,
+            "category": item.category.name,
+            "wallet": item.wallet.name,
+            "member": item.family_member.full_name,
+            "amount": str(item.amount),
+            "amount_rub": str(item.amount_rub),
+            "date": item.date.strftime("%d.%m.%Y"),
+            "comment": item.comment or "",
+            "detail_url": reverse("transaction_detail", args=[item.id]),
+            "edit_url": reverse("edit_transaction", args=[item.id]),
+            "delete_url": reverse("delete_transaction", args=[item.id]) + "?next=" + reverse("transactions"),
+        })
+
+    return JsonResponse({
+        "ok": True,
+        "items": items,
+        "pagination": {
+            "current_page": page_obj.number,
+            "total_pages": paginator.num_pages,
+            "has_previous": page_obj.has_previous(),
+            "has_next": page_obj.has_next(),
+            "previous_page": page_obj.previous_page_number() if page_obj.has_previous() else None,
+            "next_page": page_obj.next_page_number() if page_obj.has_next() else None,
+            "total_items": paginator.count,
+            "per_page": per_page,
+        }
+    })

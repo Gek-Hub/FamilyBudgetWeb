@@ -2,6 +2,7 @@
 from . import views
 
 urlpatterns = [
+    path("api/transactions/", views.api_transactions, name="api_transactions"),
     path("voice-command/", views.voice_command, name="voice_command"),
     path("", views.dashboard, name="dashboard"),
     path("login/", views.login_family, name="login_family"),
@@ -9,6 +10,7 @@ urlpatterns = [
     path("logout/", views.logout_family, name="logout_family"),
     path("account/", views.account, name="account"),
     path("transactions/", views.transactions, name="transactions"),
+    path("transactions/<int:pk>/", views.transaction_detail, name="transaction_detail"),
     path("transactions/add/", views.add_transaction, name="add_transaction"),
     path("transactions/<int:pk>/edit/", views.edit_transaction, name="edit_transaction"),
     path("transactions/<int:pk>/delete/", views.delete_transaction, name="delete_transaction"),
@@ -21,5 +23,6 @@ urlpatterns = [
     path("budget/", views.budget_limits, name="budget_limits"),
     path("analytics/", views.analytics, name="analytics"),
 ]
+
 
 

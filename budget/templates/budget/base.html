@@ -4,18 +4,21 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Семейный бюджет{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'budget/style.css' %}">
 </head>
 <body>
 <div class="layout">
     <aside class="sidebar">
         <div class="brand">FamilyBudgetWeb</div>
+
         {% if current_family_name %}
             <div class="profile">
                 <div><b>Семья:</b> {{ current_family_name }}</div>
                 <div><b>Сейчас:</b> {{ current_member_name|default:"не выбран" }}</div>
             </div>
         {% endif %}
+
         <nav>
             <a href="{% url 'dashboard' %}">Главная</a>
             <a href="{% url 'transactions' %}">Операции</a>
@@ -25,15 +28,35 @@
             <a href="{% url 'analytics' %}">Аналитика</a>
             <a href="{% url 'family_members' %}">Семья</a>
             <a href="{% url 'account' %}">Аккаунт</a>
-            {% if current_family_name %}<a class="danger-link" href="{% url 'logout_family' %}">Выйти</a>{% endif %}
+            {% if current_family_name %}
+                <a class="danger-link" href="{% url 'logout_family' %}">Выйти</a>
+            {% endif %}
         </nav>
     </aside>
-    <main class="content">
-        {% if messages %}
-            {% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
+
+    <div class="page-shell">
+        <header class="site-header">
+            <div class="site-title">Система учета семейного бюджета</div>
+            <div class="site-subtitle">Django · AJAX · серверная сортировка · пагинация · поиск</div>
+        </header>
+
+        <main class="content">
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="message {{ message.tags }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        <footer class="site-footer">
+            <span>FamilyBudgetWeb</span>
+            <span>Курсовой проект по разработке Web-приложений</span>
+        </footer>
+    </div>
 </div>
 </body>
 </html>

@@ -1,30 +1,56 @@
 ﻿{% extends "budget/base.html" %}
+{% load static %}
 {% block title %}Операции{% endblock %}
 {% block content %}
-<h1>Финансовые операции</h1>
-<a class="button" href="{% url 'add_transaction' %}">Добавить операцию</a>
+<section class="page-heading">
+    <h1>Финансовые операции</h1>
+    <p class="muted">Операции загружаются через AJAX. Поиск, сортировка и пагинация выполняются на стороне сервера.</p>
+</section>
 
-<div class="list">
-    {% for item in items %}
-        <div class="list-item">
-            <div>
-                <b>{{ item.category.name }}</b>
-                <div class="muted">{{ item.type }} · {{ item.family_member.full_name }} · {{ item.wallet.name }} · {{ item.date }}</div>
-                <div class="muted">{{ item.comment }}</div>
-            </div>
-
-            <div class="dashboard-operation-actions">
-                <div class="amount">{{ item.amount_rub|floatformat:2 }} ₽</div>
-                <div class="small-actions">
-                    <a class="mini-button" href="{% url 'edit_transaction' item.id %}">Редактировать</a>
-                    <a class="mini-button danger-mini" href="{% url 'delete_transaction' item.id %}?next={{ request.path }}"
-                       onclick="return confirm('Удалить эту операцию?');">Удалить</a>
-                </div>
-            </div>
-        </div>
-    {% empty %}
-        <p class="muted">Операций пока нет.</p>
-    {% endfor %}
+<div class="actions">
+    <a class="button" href="{% url 'add_transaction' %}">Добавить операцию</a>
 </div>
-{% endblock %}
 
+<section class="ajax-panel">
+    <div class="ajax-controls">
+        <label>
+            Поиск
+            <input id="searchInput" type="text" placeholder="Категория, участник, счет, комментарий">
+        </label>
+
+        <label>
+            Сортировка
+            <select id="sortSelect">
+                <option value="-date">Сначала новые</option>
+                <option value="date">Сначала старые</option>
+                <option value="-amount">Сумма по убыванию</option>
+                <option value="amount">Сумма по возрастанию</option>
+                <option value="category">Категория А-Я</option>
+                <option value="-category">Категория Я-А</option>
+                <option value="member">Участник А-Я</option>
+                <option value="-member">Участник Я-А</option>
+                <option value="-id">ID по убыванию</option>
+                <option value="id">ID по возрастанию</option>
+            </select>
+        </label>
+
+        <label>
+            На странице
+            <select id="perPageSelect">
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
+            </select>
+        </label>
+
+        <button id="applyFiltersBtn" type="button">Применить</button>
+    </div>
+
+    <div id="loadingIndicator" class="loading hidden">Загрузка данных...</div>
+    <div id="errorBox" class="ajax-error hidden"></div>
+    <div id="transactionsContainer" class="list"></div>
+    <div id="paginationContainer" class="pagination"></div>
+</section>
+
+<script src="{% static 'budget/js/transactions_ajax.js' %}"></script>
+{% endblock %}
