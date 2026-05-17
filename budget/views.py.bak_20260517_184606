@@ -192,7 +192,7 @@ def budget_limits(request):
     form = BudgetLimitForm(request.POST or None, family=family)
     if request.method == "POST" and form.is_valid():
         category = form.cleaned_data["category"]
-        limit, _ = BudgetLimit.objects.get_or_create(family=family, category=category, defaults={"monthly_limit": Decimal("0")})
+        limit, _ = BudgetLimit.objects.get_or_create(family=family, category=category)
         limit.monthly_limit = form.cleaned_data["monthly_limit"]; limit.save()
         return redirect("budget_limits")
     current_month = timezone.now().date().replace(day=1)
@@ -476,4 +476,3 @@ def api_transactions(request):
             "per_page": per_page,
         }
     })
-
